@@ -54,6 +54,11 @@ func TestCreateChatCompletionStream(t *testing.T) {
 		data = `{"id":"2","object":"completion","created":1598069255,"model":"gpt-3.5-turbo","system_fingerprint": "fp_d9767fc5b9","choices":[{"index":0,"delta":{"content":"response2"},"finish_reason":"max_tokens"}]}`
 		dataBytes = append(dataBytes, []byte("data: "+data+"\n\n")...)
 
+		dataBytes = append(dataBytes, []byte("event: message\n")...)
+		//nolint:lll
+		data = `{"id":"3","object":"completion","created":1598069256,"model":"gpt-3.5-turbo","system_fingerprint": "fp_d9767fc5b9","choices":[{"index":0,"delta":{"content":"response3"},"finish_reason":"max_tokens"}]}`
+		dataBytes = append(dataBytes, []byte("data:"+data+"\n\n")...)
+
 		dataBytes = append(dataBytes, []byte("event: done\n")...)
 		dataBytes = append(dataBytes, []byte("data: [DONE]\n\n")...)
 
@@ -101,6 +106,21 @@ func TestCreateChatCompletionStream(t *testing.T) {
 				{
 					Delta: openai.ChatCompletionStreamChoiceDelta{
 						Content: "response2",
+					},
+					FinishReason: "max_tokens",
+				},
+			},
+		},
+		{
+			ID:                "3",
+			Object:            "completion",
+			Created:           1598069256,
+			Model:             openai.GPT3Dot5Turbo,
+			SystemFingerprint: "fp_d9767fc5b9",
+			Choices: []openai.ChatCompletionStreamChoice{
+				{
+					Delta: openai.ChatCompletionStreamChoiceDelta{
+						Content: "response3",
 					},
 					FinishReason: "max_tokens",
 				},

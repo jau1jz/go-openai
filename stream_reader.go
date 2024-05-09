@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	utils "github.com/sashabaranov/go-openai/internal"
 )
 
 var (
-	headerData  = []byte("data: ")
-	errorPrefix = []byte(`data: {"error":`)
+	headerData   = []byte("data:")
+	errorPrefix  = []byte(`data: {"error":`)
+	errorPrefix2 = []byte(`data:{"error":`)
 )
 
 type streamable interface {
@@ -59,7 +61,7 @@ func (stream *streamReader[T]) processLines() (T, error) {
 		}
 
 		noSpaceLine := bytes.TrimSpace(rawLine)
-		if bytes.HasPrefix(noSpaceLine, errorPrefix) {
+		if bytes.HasPrefix(noSpaceLine, errorPrefix) || bytes.HasPrefix(noSpaceLine, errorPrefix2) {
 			hasErrorPrefix = true
 		}
 		if !bytes.HasPrefix(noSpaceLine, headerData) || hasErrorPrefix {
@@ -79,7 +81,7 @@ func (stream *streamReader[T]) processLines() (T, error) {
 		}
 
 		noPrefixLine := bytes.TrimPrefix(noSpaceLine, headerData)
-		if string(noPrefixLine) == "[DONE]" {
+		if strings.Contains(string(noPrefixLine), "[DONE]") {
 			stream.isFinished = true
 			return *new(T), io.EOF
 		}
